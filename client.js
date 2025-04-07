@@ -55,11 +55,11 @@ function randomId() {
     return Math.random().toString(36).substring(2, 15);
 }
 
-const db = {
+export const room = {
     getLastSnapshot: async () => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
-        await window.Poe.sendUserMessage(JSON.stringify({
+        await window.Poe.sendUserMessage("@push_pull_db " + JSON.stringify({
             operationId,
             operation: "get_state"
         }))
@@ -67,7 +67,7 @@ const db = {
     pushEvents: async (events) => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
-        await window.Poe.sendUserMessage(JSON.stringify({
+        await window.Poe.sendUserMessage("@push_pull_db " + JSON.stringify({
             operationId,
             operation: "push_events",
             params: { events }
@@ -76,7 +76,7 @@ const db = {
     pullEvents: async (afterEventId) => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
-        await window.Poe.sendUserMessage(JSON.stringify({
+        await window.Poe.sendUserMessage("@push_pull_db " + JSON.stringify({
             operationId,
             operation: "get_events",
             params: {
@@ -87,7 +87,7 @@ const db = {
     createSnapshot: async ({ data, lastIncludedEventId }) => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
-        await window.Poe.sendUserMessage(JSON.stringify({
+        await window.Poe.sendUserMessage("@push_pull_db " + JSON.stringify({
             operationId,
             operation: "set_state",
             params: {
