@@ -1,5 +1,3 @@
-
-
 const promisesRegistry = new Map();
 class DeferredPromise {
     constructor() {
@@ -136,7 +134,7 @@ export const db = {
             }
         }
 
-        const updateQueue = [];
+        let updateQueue = [];
         doc.on('update', (update) => {
             console.log("update!!!", update);
             updateQueue.push(update);
@@ -207,7 +205,7 @@ export const db = {
 
 /*
 LLM Prompt
-using `import { db } from "https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@4c9544e1637a4769fbf3d8da28c20768f6713f54/client.js"`
+using `import { db } from "https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@b591d0fb8b7199f78e41999673896bbce117c518/client.js"`
 
 ```
 type db = {
