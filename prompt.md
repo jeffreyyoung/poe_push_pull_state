@@ -24,5 +24,5 @@ state.changeState((draft) => {
 
 Make a collaborative minesweeper game
 ```
-https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@709ba294ea540b43d1eb3735faf57fb433b957d1/client.js
+https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@047d44d42294f2b257a0cb820b162614f8aa4848/client.js
 

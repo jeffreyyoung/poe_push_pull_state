@@ -242,6 +242,9 @@ function notifyStateChange() {
         callback(_curState);
     });
 }
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 export const state = {
     sync: async () => {
         let patches = localPatches;
@@ -271,6 +274,10 @@ export const state = {
         applyPatches(_curState, localPatches);
         notifyStateChange();
         lastSyncedEventId = result.events.at(-1).eventId;
+        await state.createSnapshot({
+            data: JSON.stringify(_curState),
+            lastIncludedEventId: lastSyncedEventId
+        });
     },
     emitChange: (callback) => {
         stateChangeCallbacks.push(callback);
@@ -287,16 +294,17 @@ export const state = {
         notifyStateChange();
         lastSyncedEventId = initial.lastIncludedEventId;
 
-        setInterval(() => {
-            state.sync().then(() => {
-                console.log("synced");
-                console.log("curState", _curState);
-            }).catch((e) => {
+        sleep(3000).then(() => {
+            state.sync().then(async () => {
+                await sleep(5000);
+                state.sync();
+            }).catch(async (e) => {
                 console.error("error syncing", e);
-                console.log("curState", _curState);
-            });
+                await sleep(10_000);
+                state.sync();
+            })
+        })
 
-        }, 10_000);
         return _curState;
     },
     onStateChange: (callback) => {
