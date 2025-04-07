@@ -65,7 +65,9 @@ export const room = {
             operation: "get_state"
         }), {
             handler: "events"
-        })
+        })      
+
+        return promisesRegistry.get(operationId).promise;
     },
     pushEvents: async (events) => {
         const operationId = randomId();
@@ -77,6 +79,8 @@ export const room = {
         }), {
             handler: "events"
         })
+
+        return promisesRegistry.get(operationId).promise;
     },
     pullEvents: async (afterEventId) => {
         const operationId = randomId();
@@ -90,6 +94,8 @@ export const room = {
         }), {
             handler: "events"
         })
+
+        return promisesRegistry.get(operationId).promise;
     },
     createSnapshot: async ({ data, lastIncludedEventId }) => {
         const operationId = randomId();
@@ -104,5 +110,7 @@ export const room = {
         }), {
             handler: "events"
         })
+
+        return promisesRegistry.get(operationId).promise;
     },
 }
