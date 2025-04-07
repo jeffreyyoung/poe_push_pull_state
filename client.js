@@ -13,7 +13,7 @@ class DeferredPromise {
 
 window.Poe.registerHandler("events", (result) => {
     const response = result?.responses?.[0];
-    console.log("result!!!", result)
+    console.log("result!!!", JSON.stringify(result, null, 2))
     if (!response) {
         return;
     }
