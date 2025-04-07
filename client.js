@@ -113,6 +113,8 @@ export const room = {
         return promisesRegistry.get(operationId).promise;
     },
 }
+/*
+// this doesn't work....
 import { fromUint8Array, toUint8Array } from 'https://cdn.jsdelivr.net/npm/js-base64@3.7.7/base64.mjs';
 let doc = null;
 const myNonces = new Set();
@@ -202,20 +204,149 @@ export const db = {
     Y,
 }
 
-
+*/
 /*
 LLM Prompt
-using `import { db } from "https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@b591d0fb8b7199f78e41999673896bbce117c518/client.js"`
+
 
 ```
 type db = {
    setupYjsDoc: () => Promise<Y.Doc>,
    Y: Y // yjs@13.6.8  
 }
+
+import { db } from "URL_BELOW"
 ```
 
 The syncing is already setup, do not use local storage or anything else to persist, just call await db.setupYjsDoc to get a doc.  You can call doc.on("update" to update the UI.
 
 
 Make a collaborative document editor
+
+this is the url
+```
+
+
+
 */
+
+import {produce, applyPatches, enablePatches}  from 'https://cdn.jsdelivr.net/npm/immer@10.1.1/+esm'
+enablePatches();
+
+let localPatches = [];
+let inverseLocalPatches = [];
+let stateChangeCallbacks = [];
+let _curState = null;
+let lastSyncedEventId = null;
+function notifyStateChange() {
+    stateChangeCallbacks.forEach((callback) => {
+        callback(_curState);
+    });
+}
+export const state = {
+    sync: async () => {
+        if (localPatches.length > 0) {
+            const patches = localPatches;
+            const inversePatches = inverseLocalPatches;
+            localPatches = [];
+            inverseLocalPatches = [];
+            const events = patches.map(
+                (patch) => {
+                    return {
+                        data: JSON.stringify(patch),
+                        clientNonce: randomId()
+                    }
+                }
+            )
+            await room.pushEvents(events);
+        }
+        const result = await room.pullEvents(lastSyncedEventId);
+        if (result.events.length === 0) {
+            console.log("no events");
+            return;
+        }
+        // undo patches
+        _curState = applyPatches(_curState, inversePatches.reverse());
+        for (const event of result.events) {
+            _curState = produce(_curState, (draft) => {
+                const patch = JSON.parse(event.data);
+                applyPatches(draft, patch);
+            });
+        }
+        notifyStateChange();
+        lastSyncedEventId = result.events.at(-1).eventId;
+    },
+    emitChange: (callback) => {
+        stateChangeCallbacks.push(callback);
+    },
+    setupState: async (initialState) => {
+        _curState = initialState;
+        const initial = await room.getLastSnapshot();
+        if (initial.data) {
+            _curState = JSON.parse(initial.data);
+        }
+        for (const event of initial.notYetIncludedEvents) {
+            _curState = applyPatches(_curState, [JSON.parse(event.data)]);
+        }
+        notifyStateChange();
+        lastSyncedEventId = initial.lastIncludedEventId;
+
+        setInterval(() => {
+            state.sync().then(() => {
+                console.log("synced");
+            }).catch((e) => {
+                console.error("error syncing", e);
+            });
+        }, 10_000);
+        return _curState;
+    },
+    onStateChange: (callback) => {
+        stateChangeCallbacks.push(callback);
+    },
+    getState: () => {
+        return _curState;
+    },
+    changeState: (changeCb) => {
+        const nextState = produce(_curState, (draft) => {
+            changeCb(draft);
+        }, (patches, inversePatches) => {
+            localPatches.push(...patches);
+            inverseLocalPatches.push(...inversePatches);
+        });
+        _curState = nextState;
+        notifyStateChange();
+    }
+}
+
+/**
+There exists a synced state library imported as
+
+import { state } from "URL_BELOW"
+
+Always assume every param on the state does not exist yet.  Here is an example of how to use it:
+
+
+state.onStateChange((state) => {
+   updateUI(state)
+})
+
+await state.setupState({ todos: [] })
+
+state.changeState((draft) => {
+    if (!draft.todos) {
+        draft.todos = [];
+    }
+    draft.todos.push({
+        id: randomId(),
+        title: "New Todo",
+    });
+});
+
+*/
+
+
+
+
+
+
+// attempt with immer
