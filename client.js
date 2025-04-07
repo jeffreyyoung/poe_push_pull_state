@@ -245,9 +245,9 @@ function notifyStateChange() {
 }
 export const state = {
     sync: async () => {
+        let inversePatches = inverseLocalPatches;
         if (localPatches.length > 0) {
             const patches = localPatches;
-            const inversePatches = inverseLocalPatches;
             localPatches = [];
             inverseLocalPatches = [];
             const events = patches.map(
@@ -266,7 +266,7 @@ export const state = {
             return;
         }
         // undo patches
-        _curState = applyPatches(_curState, inversePatches.reverse());
+        _curState = applyPatches(_curState, inversePatches);
         for (const event of result.events) {
             _curState = produce(_curState, (draft) => {
                 const patch = JSON.parse(event.data);
