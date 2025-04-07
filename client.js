@@ -22,7 +22,7 @@ window.Poe.registerHandler("events", (result) => {
     if (!deferred) {
         return;
     }
-    deferred.resolve(json);
+    deferred.resolve(json.result);
 });
 
 
@@ -33,7 +33,7 @@ LLM shape
 
 type NotYetPushedEvent = {
     data: String,
-    clientEventId: String,
+    clientNonce: String,
 }
 type PushedEvent = NotYetPushedEvent &{
    eventId: string,
@@ -45,10 +45,10 @@ type Snapshot = {
 }
 
 type room = {
-    getLastSnapshot: () => Promise<unknown>,
-    pushEvents: (events: NotYetPushedEvent[]) => Promise<unknown>,
-    pullEvents: (afterEventId: string) => Promise<unknown>,
-    createSnapshot: (snapshot: Snapshot) => Promise<unknown>,
+    getLastSnapshot: () => Promise<{ data?: string, lastIncludedEventId?: string, notYetIncludedEvents: PushedEvent[] }>,
+    pushEvents: (events: NotYetPushedEvent[]) => Promise<{ events: PushedEvent[] }>,
+    pullEvents: (afterEventId: string) => Promise<{ events: PushedEvent[] }>,
+    createSnapshot: (snapshot: Snapshot) => Promise<{ lastIncludedEventId: string, data: string }>,
 }
 */
 
