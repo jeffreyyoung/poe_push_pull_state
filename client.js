@@ -43,11 +43,11 @@ type Snapshot = {
     lastIncludedEventId?: string,
 }
 
-type db = {
-    getLastSnapshot: () => Promise<{ data?: string, lastIncludedEventId?: string, notYetIncludedEvents: PushedEvent[] }>,
-    pushEvents: (events: NotYetPushedEvent[]) => Promise<void>,
-    pullEvents: (afterEventId: string) => Promise<PushedEvent[]>,
-    createSnapshot: (snapshot: Snapshot) => Promise<void>,
+type room = {
+    getLastSnapshot: () => Promise<unknown>,
+    pushEvents: (events: NotYetPushedEvent[]) => Promise<unknown>,
+    pullEvents: (afterEventId: string) => Promise<unknown>,
+    createSnapshot: (snapshot: Snapshot) => Promise<unknown>,
 }
 */
 
@@ -62,27 +62,33 @@ export const room = {
         await window.Poe.sendUserMessage("@push_pull_db " + JSON.stringify({
             operationId,
             operation: "get_state"
-        }))
+        }), {
+            handler: "events"
+        })
     },
     pushEvents: async (events) => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
         await window.Poe.sendUserMessage("@push_pull_db " + JSON.stringify({
             operationId,
-            operation: "push_events",
+            operation: "events/push",
             params: { events }
-        }))
+        }), {
+            handler: "events"
+        })
     },
     pullEvents: async (afterEventId) => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
         await window.Poe.sendUserMessage("@push_pull_db " + JSON.stringify({
             operationId,
-            operation: "get_events",
+            operation: "events/pull",
             params: {
                 after_event_id: afterEventId
             }
-        }))
+        }), {
+            handler: "events"
+        })
     },
     createSnapshot: async ({ data, lastIncludedEventId }) => {
         const operationId = randomId();
@@ -94,6 +100,8 @@ export const room = {
                 data,
                 lastIncludedEventId
             }
-        }))
+        }), {
+            handler: "events"
+        })
     },
 }
