@@ -274,7 +274,7 @@ export const state = {
         applyPatches(_curState, localPatches);
         notifyStateChange();
         lastSyncedEventId = result.events.at(-1).eventId;
-        await state.createSnapshot({
+        await room.createSnapshot({
             data: JSON.stringify(_curState),
             lastIncludedEventId: lastSyncedEventId
         });
