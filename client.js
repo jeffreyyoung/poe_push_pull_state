@@ -11,7 +11,6 @@ class DeferredPromise {
 
 window.Poe.registerHandler("events", (result) => {
     const response = result?.responses?.[0];
-    console.log("result!!!", JSON.stringify(result, null, 2))
     if (!response) {
         return;
     }
@@ -245,11 +244,11 @@ function notifyStateChange() {
 }
 export const state = {
     sync: async () => {
+        let patches = localPatches;
+        localPatches = [];
         let inversePatches = inverseLocalPatches;
-        if (localPatches.length > 0) {
-            const patches = localPatches;
-            localPatches = [];
-            inverseLocalPatches = [];
+        inverseLocalPatches = [];
+        if (patches.length > 0) {
             await room.pushEvents([{
                 data: JSON.stringify(patches),
                 clientNonce: randomId()
@@ -265,6 +264,7 @@ export const state = {
         // undo any local changes that may have happened during pullEvents
         applyPatches(_curState, inverseLocalPatches);
         for (const event of result.events) {
+            console.log("applying patches!!!!", event);
             _curState = applyPatches(_curState, JSON.parse(event.data));
         }
         // apply the local changes on top
@@ -337,7 +337,7 @@ state.changeState((draft) => {
     });
 });
 ```
-https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@fee68ed23d6dd7d05e7dc7b8f29594c828019198/client.js
+https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@99a159c1b63cd2a3f8c39dd91c35197d08a302b7/client.js
 
 Make a collaborative minesweeper game
 */
