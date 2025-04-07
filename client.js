@@ -126,7 +126,7 @@ export const db = {
         const result = await room.getLastSnapshot();
         console.log("result", result);
         const lastIncludedEventId = result.lastIncludedEventId;
-        const doc = new Y.Doc();
+        doc = new Y.Doc();
         if (result.data) {
             Y.applyUpdate(doc, toUint8Array(result.data))
         }
@@ -162,7 +162,11 @@ export const db = {
                     Y.applyUpdate(doc, toUint8Array(event.data))
                 }
             }
-        }, 4000);
+            const lastEventId = result.events?.at(-1)?.eventId;
+            if (lastEventId) {
+                lastIncludedEventId = lastEventId;
+            }
+        }, 5000);
 
         return doc;
     },
