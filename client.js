@@ -28,23 +28,26 @@ window.Poe.registerHandler("events", (result) => {
 
 
 /**
-type State = {
-    data: String,
-    lastIncludedEventId: String,
-}
+LLM shape
 
-type Event = {
+type NotYetPushedEvent = {
     data: String,
     clientEventId: String,
 }
-type UnpushedEvent = Event & {
-    eventId: String,
+type PushedEvent = NotYetPushedEvent &{
+   eventId: string,
 }
 
 type Snapshot = {
-    snapshotId: String,
-    fromEventId: String,
-    content: String,
+    data?: string,
+    lastIncludedEventId?: string,
+}
+
+type db = {
+    getLastSnapshot: () => Promise<{ data?: string, lastIncludedEventId?: string, notYetIncludedEvents: PushedEvent[] }>,
+    pushEvents: (events: NotYetPushedEvent[]) => Promise<void>,
+    pullEvents: (afterEventId: string) => Promise<PushedEvent[]>,
+    createSnapshot: (snapshot: Snapshot) => Promise<void>,
 }
 */
 
@@ -53,7 +56,7 @@ function randomId() {
 }
 
 const db = {
-    getState: async () => {
+    getLastSnapshot: async () => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
         await window.Poe.sendUserMessage(JSON.stringify({
@@ -61,7 +64,7 @@ const db = {
             operation: "get_state"
         }))
     },
-    pushEvent: async (events) => {
+    pushEvents: async (events) => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
         await window.Poe.sendUserMessage(JSON.stringify({
@@ -81,7 +84,7 @@ const db = {
             }
         }))
     },
-    setState: async ({ data, lastIncludedEventId }) => {
+    createSnapshot: async ({ data, lastIncludedEventId }) => {
         const operationId = randomId();
         promisesRegistry.set(operationId, new DeferredPromise());
         await window.Poe.sendUserMessage(JSON.stringify({
