@@ -290,9 +290,12 @@ export const state = {
         setInterval(() => {
             state.sync().then(() => {
                 console.log("synced");
+                console.log("curState", _curState);
             }).catch((e) => {
                 console.error("error syncing", e);
+                console.log("curState", _curState);
             });
+
         }, 10_000);
         return _curState;
     },
@@ -313,31 +316,3 @@ export const state = {
         notifyStateChange();
     }
 }
-
-/**
-There exists a synced state library imported as
-
-import { state } from "URL_BELOW"
-
-Always assume every param on the state does not exist yet.  Here is an example of how to use it:
-
-state.onStateChange((state) => {
-   updateUI(state)
-})
-
-await state.setupState({ todos: [] })
-
-state.changeState((draft) => {
-    if (!draft.todos) {
-        draft.todos = [];
-    }
-    draft.todos.push({
-        id: randomId(),
-        title: "New Todo",
-    });
-});
-```
-https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@99a159c1b63cd2a3f8c39dd91c35197d08a302b7/client.js
-
-Make a collaborative minesweeper game
-*/
