@@ -138,25 +138,35 @@ export const db = {
 
         const updateQueue = [];
         doc.on('update', (update) => {
+            console.log("update!!!", update);
             updateQueue.push(update);
         });
- 
-        setInterval(async () => {
+
+
+        async function sync() {
+            console.log("setInterval updateQueue.length", updateQueue.length);
             if (updateQueue.length > 0) {
                 // push updates
                 const updates = updateQueue;
                 updateQueue = [];
                 const update = Y.mergeUpdates(updates);
-                console.log("pushing update", update);
+                console.log("setIntervalpushing update", update);
                 const nonce = randomId();
                 myNonces.add(nonce);
+                console.log("about to push events");
                 await room.pushEvents([{
                     data: fromUint8Array(update),
                     clientNonce: nonce
-                }]);
+                }]).catch((e) => {
+                    console.error("error pushing update", e);
+                });
+                console.log("pushed events");
             }
+
             // now pull all the latest events
+            console.log("about to pull events");
             const result = await room.pullEvents(lastIncludedEventId);
+            console.log("pulled events", result);
             if (result.events.length === 0) {
                 console.log("no events");
                 return;
@@ -176,7 +186,17 @@ export const db = {
                 data: fromUint8Array(Y.encodeStateAsUpdate(doc)),
                 lastIncludedEventId
             }
+            console.log("about to create snapshot");
             await room.createSnapshot(snapshot);
+            console.log("created snapshot");
+        }
+ 
+        setInterval(async () => {
+            sync().then(() => {
+                console.log("synced");
+            }).catch((e) => {
+                console.error("error syncing", e);
+            });
         }, 10_000);
 
         return doc;
