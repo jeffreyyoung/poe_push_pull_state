@@ -204,3 +204,20 @@ export const db = {
     Y,
 }
 
+
+/*
+LLM Prompt
+using `import { db } from "https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@4c9544e1637a4769fbf3d8da28c20768f6713f54/client.js"`
+
+```
+type db = {
+   setupYjsDoc: () => Promise<Y.Doc>,
+   Y: Y // yjs@13.6.8  
+}
+```
+
+The syncing is already setup, do not use local storage or anything else to persist, just call await db.setupYjsDoc to get a doc.  You can call doc.on("update" to update the UI.
+
+
+Make a collaborative document editor
+*/
