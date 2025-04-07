@@ -17,12 +17,12 @@ window.Poe.registerHandler("events", (result) => {
     if (!response) {
         return;
     }
-    const { operationId, ...rest } = response;
-    const deferred = promisesRegistry.get(operationId);
+    const json = JSON.parse(response.content);
+    const deferred = promisesRegistry.get(json.operationId);
     if (!deferred) {
         return;
     }
-    deferred.resolve(rest);
+    deferred.resolve(json);
 });
 
 
