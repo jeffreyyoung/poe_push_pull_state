@@ -250,15 +250,10 @@ export const state = {
             const patches = localPatches;
             localPatches = [];
             inverseLocalPatches = [];
-            const events = patches.map(
-                (patch) => {
-                    return {
-                        data: JSON.stringify(patch),
-                        clientNonce: randomId()
-                    }
-                }
-            )
-            await room.pushEvents(events);
+            await room.pushEvents([{
+                data: JSON.stringify(patches),
+                clientNonce: randomId()
+            }]);
         }
         const result = await room.pullEvents(lastSyncedEventId);
         if (result.events.length === 0) {
@@ -267,12 +262,13 @@ export const state = {
         }
         // undo patches
         _curState = applyPatches(_curState, inversePatches);
+        // undo any local changes that may have happened during pullEvents
+        applyPatches(_curState, inverseLocalPatches);
         for (const event of result.events) {
-            _curState = produce(_curState, (draft) => {
-                const patch = JSON.parse(event.data);
-                applyPatches(draft, patch);
-            });
+            _curState = applyPatches(_curState, JSON.parse(event.data));
         }
+        // apply the local changes on top
+        applyPatches(_curState, localPatches);
         notifyStateChange();
         lastSyncedEventId = result.events.at(-1).eventId;
     },
@@ -286,7 +282,7 @@ export const state = {
             _curState = JSON.parse(initial.data);
         }
         for (const event of initial.notYetIncludedEvents) {
-            _curState = applyPatches(_curState, [JSON.parse(event.data)]);
+            _curState = applyPatches(_curState, JSON.parse(event.data));
         }
         notifyStateChange();
         lastSyncedEventId = initial.lastIncludedEventId;
