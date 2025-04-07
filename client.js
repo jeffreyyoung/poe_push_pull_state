@@ -337,7 +337,7 @@ state.changeState((draft) => {
     });
 });
 ```
-https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@ce401f8b5ff2111f5eac8edc6cbad68023e5d69d/client.js
+https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@fee68ed23d6dd7d05e7dc7b8f29594c828019198/client.js
 
-Make a collaborative minecraft game
+Make a collaborative minesweeper game
 */
