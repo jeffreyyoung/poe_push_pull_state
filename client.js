@@ -140,25 +140,30 @@ export const db = {
         doc.on('update', (update) => {
             updateQueue.push(update);
         });
-        setInterval(() => {
-            if (updateQueue.length == 0) {
+ 
+        setInterval(async () => {
+            if (updateQueue.length > 0) {
+                // push updates
+                const updates = updateQueue;
+                updateQueue = [];
+                const update = Y.mergeUpdates(updates);
+                console.log("pushing update", update);
+                const nonce = randomId();
+                myNonces.add(nonce);
+                await room.pushEvents([{
+                    data: fromUint8Array(update),
+                    clientNonce: nonce
+                }]);
+            }
+            // now pull all the latest events
+            const result = await room.pullEvents(lastIncludedEventId);
+            if (result.events.length === 0) {
+                console.log("no events");
                 return;
             }
-            const updates = updateQueue;
-            updateQueue = [];
-            const update = Y.mergeUpdates(updates);
-            const nonce = randomId();
-            myNonces.add(nonce);
-            room.pushEvents([{
-                data: fromUint8Array(update),
-                clientNonce: nonce
-            }])
-            myNonces.delete(nonce);
-        }, 4000);   
-        setInterval(() => {
-            const result = room.pullEvents(lastIncludedEventId);
             for (const event of result.events) {
-                if (myNonces.has(event.clientNonce)) {
+                // not sure whether or not we should exclude events that we sent
+                if (!myNonces.has(event.clientNonce)) {
                     Y.applyUpdate(doc, toUint8Array(event.data))
                 }
             }
@@ -166,7 +171,13 @@ export const db = {
             if (lastEventId) {
                 lastIncludedEventId = lastEventId;
             }
-        }, 5000);
+            // create snapshot
+            const snapshot = {
+                data: fromUint8Array(Y.encodeStateAsUpdate(doc)),
+                lastIncludedEventId
+            }
+            await room.createSnapshot(snapshot);
+        }, 10_000);
 
         return doc;
     },
