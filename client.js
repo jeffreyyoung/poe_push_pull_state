@@ -325,7 +325,6 @@ import { state } from "URL_BELOW"
 
 Always assume every param on the state does not exist yet.  Here is an example of how to use it:
 
-
 state.onStateChange((state) => {
    updateUI(state)
 })
@@ -342,12 +341,7 @@ state.changeState((draft) => {
     });
 });
 ```
+https://cdn.jsdelivr.net/gh/jeffreyyoung/poe_push_pull_state@ce401f8b5ff2111f5eac8edc6cbad68023e5d69d/client.js
 
+Make a collaborative minecraft game
 */
-
-
-
-
-
-
-// attempt with immer
